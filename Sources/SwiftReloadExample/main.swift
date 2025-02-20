@@ -5,7 +5,7 @@ import SwiftSyntax
 
 LocalSwiftReloader().start()
 
-let counter = Counter()
+let counter = FastCounter()
 
 @MainActor func hello() {
     print("hello")
@@ -17,6 +17,13 @@ class Counter {
 
     func tick() {
         count += 1
+        print("count = \(count)")
+    }
+}
+
+class FastCounter: Counter {
+    override func tick() {
+        count += 10
         print("count = \(count)")
     }
 }

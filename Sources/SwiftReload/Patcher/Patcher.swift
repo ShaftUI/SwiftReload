@@ -68,6 +68,13 @@ class Pacher {
     /// Add `_dynamicReplacement` attribute to the function.
     private func patchFunction(_ node: FunctionDeclSyntax) -> DeclSyntaxProtocol {
         var result = node
+
+        /// Remove `override` modifier.
+        result.modifiers = result.modifiers.filter { modifier in
+            return modifier.name.text != "override"
+        }
+
+        /// Add `_dynamicReplacement` attribute.
         let dynamicReplacement = AttributeSyntax(
             attributeName: "_dynamicReplacement" as TypeSyntax,
             leftParen: .leftParenToken(),
@@ -77,7 +84,10 @@ class Pacher {
             rightParen: .rightParenToken()
         )
         result.attributes.append(.attribute(dynamicReplacement))
+
+        /// Assign a random name to avoid conflict.
         result.name = getPatchName(node.name.text)
+
         return result
     }
 
