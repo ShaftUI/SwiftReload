@@ -23,7 +23,7 @@ dependencies: [
 )
 ```
 
-1. Add `-enable-implicit-dynamic` flag to your target's build settings:
+1. Add `-enable-private-imports` and `-enable-implicit-dynamic` flag to your target's build settings:
 
 ```swift
 .executableTarget(
@@ -32,7 +32,8 @@ dependencies: [
         "SwiftReload"
     ],
     swiftSettings: [
-        .unsafeFlags(["-Xfrontend", "-enable-implicit-dynamic"])
+        .unsafeFlags(["-Xfrontend", "-enable-private-imports"]),
+        .unsafeFlags(["-Xfrontend", "-enable-implicit-dynamic"]),
     ]
 )
 ```
