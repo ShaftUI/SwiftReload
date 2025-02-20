@@ -15,13 +15,29 @@ dependencies: [
 2. Add SwiftReload to your target's dependencies:
 
 ```swift
-.target(
+.executableTarget(
     name: "MyApp",
     dependencies: [
         .product(name: "SwiftReload", package: "SwiftReload")
     ]
 )
 ```
+
+1. Add `-enable-implicit-dynamic` flag to your target's build settings:
+
+```swift
+.executableTarget(
+    name: "MyApp",
+    dependencies: [
+        .product(name: "SwiftReload", package: "SwiftReload")
+    ],
+    swiftSettings: [
+        .unsafeFlags(["-Xfrontend", "-enable-implicit-dynamic"])
+    ]
+)
+```
+
+This enables method swizzling, which SwiftReload uses to replace code at runtime.
 
 3. Add the following code at the beginning of your `main.swift`:
 
@@ -30,3 +46,9 @@ import SwiftReload
 
 LocalSwiftReloader().start()
 ```
+
+> For complete example, see the [`Sources/SwiftReloadExample`](https://github.com/ShaftUI/SwiftReload/tree/main/Sources/SwiftReloadExample) directory.
+
+## How it works
+
+SwiftReload uses a file watcher to monitor changes to the source files of your project. When a change is detected, it recompiles the updated source files and reloads the main module of your project.

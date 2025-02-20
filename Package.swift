@@ -43,7 +43,7 @@ let package = Package(
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
             ],
             swiftSettings: [
-                .unsafeFlags(["-enable-private-imports", "-Xfrontend", "-enable-implicit-dynamic"])
+                .unsafeFlags(["-Xfrontend", "-enable-implicit-dynamic"])
             ]
         ),
         .testTarget(
