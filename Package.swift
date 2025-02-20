@@ -29,7 +29,7 @@ let package = Package(
             name: "SwiftReload",
             dependencies: [
                 "Yams",
-                .product(name: "SwiftToolsSupport", package: "swift-tools-support-core"),
+                .product(name: "SwiftToolsSupport-auto", package: "swift-tools-support-core"),
                 .product(name: "SwiftParser", package: "swift-syntax"),
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
                 .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
