@@ -116,7 +116,8 @@ public class LocalSwiftReloader {
         // load the patch dylib
         let loadResult = dlopen(outputFile.path, RTLD_NOW)
         if loadResult == nil {
-            print("🛑 Failed to load patch dylib \(outputFile.path)")
+            let error = String(cString: dlerror())
+            print("🛑 Failed to load patch dylib \(outputFile.path): \(error)")
             return
         } else {
             print("✅ Patch loaded successfully")
