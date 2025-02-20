@@ -1,7 +1,8 @@
 import Foundation
 
 public class LocalSwiftReloader {
-    public init(entryPoint: String = #filePath) {
+    public init(entryPoint: String = #filePath, callback: @escaping () -> Void = {}) {
+        self.callback = callback
         self.entryPoint = URL(fileURLWithPath: entryPoint)
         self.projectExtractor = SwiftPMProjectExtractor(entryPoint: self.entryPoint)
         self.sourceRoot = self.entryPoint.deletingLastPathComponent()
@@ -11,6 +12,10 @@ public class LocalSwiftReloader {
         try? FileManager.default.removeItem(at: patchBuildRoot)
         initState()
     }
+
+    /// The callback to run when a patch is applied. Note that there is no
+    /// guarantee that the callback will be run on the main thread.
+    public let callback: () -> Void
 
     /// The entry point of the Swift project, usually the main Swift file. This
     /// is used to locate the project root.
@@ -121,6 +126,7 @@ public class LocalSwiftReloader {
             return
         } else {
             print("✅ Patch loaded successfully")
+            callback()
         }
     }
 
