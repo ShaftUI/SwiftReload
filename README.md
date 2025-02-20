@@ -8,7 +8,7 @@ This is an experimental project that enables hot reloading of Swift code in Swif
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/ShaftUI/SwiftReload.git", .branch("main"))
+    .package(url: "https://github.com/ShaftUI/SwiftReload.git", branch: "main")
 ]
 ```
 
@@ -18,7 +18,7 @@ dependencies: [
 .executableTarget(
     name: "MyApp",
     dependencies: [
-        .product(name: "SwiftReload", package: "SwiftReload")
+        "SwiftReload"
     ]
 )
 ```
@@ -29,7 +29,7 @@ dependencies: [
 .executableTarget(
     name: "MyApp",
     dependencies: [
-        .product(name: "SwiftReload", package: "SwiftReload")
+        "SwiftReload"
     ],
     swiftSettings: [
         .unsafeFlags(["-Xfrontend", "-enable-implicit-dynamic"])
