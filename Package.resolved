@@ -1,0 +1,33 @@
+{
+  "originHash" : "0389081aca39692489312fe270ab5a03e1855af4feeabb051e7c5abc25338f3e",
+  "pins" : [
+    {
+      "identity" : "swift-syntax",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-syntax.git",
+      "state" : {
+        "revision" : "0687f71944021d616d34d922343dcef086855920",
+        "version" : "600.0.1"
+      }
+    },
+    {
+      "identity" : "swift-tools-support-core",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-tools-support-core",
+      "state" : {
+        "branch" : "main",
+        "revision" : "bd9e2de5fdada4a0249de3be88f9ad95fe8511f6"
+      }
+    },
+    {
+      "identity" : "yams",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/jpsim/Yams.git",
+      "state" : {
+        "revision" : "2688707e563b44d7d87c29ba6c5ca04ce86ae58b",
+        "version" : "5.3.0"
+      }
+    }
+  ],
+  "version" : 3
+}
