@@ -229,19 +229,16 @@ private protocol _FileWatcher {
                     assert(!(handle == INVALID_HANDLE_VALUE))
 
                     let dwSize: DWORD = GetFinalPathNameByHandleW(handle, nil, 0, 0)
-                    let path: String = String(
-                        decodingCString: [WCHAR](unsafeUninitializedCapacity: Int(dwSize) + 1) {
-                            let dwSize: DWORD = GetFinalPathNameByHandleW(
-                                handle,
-                                $0.baseAddress,
-                                DWORD($0.count),
-                                0
-                            )
-                            assert(dwSize == $0.count)
-                            $1 = Int(dwSize)
-                        },
-                        as: UTF16.self
-                    )
+                    let path = withUnsafeTemporaryAllocation(of: WCHAR.self, capacity: Int(dwSize) + 1) {
+                        let dwSize: DWORD = GetFinalPathNameByHandleW(
+                            handle,
+                            $0.baseAddress,
+                            DWORD($0.count),
+                            0
+                        )
+                        return String(decodingCString: $0.baseAddress!, as: UTF16.self)
+                    }
+
 
                     return Watch(directory: handle, path)
                 }

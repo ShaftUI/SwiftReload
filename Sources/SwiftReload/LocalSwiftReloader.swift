@@ -1,5 +1,9 @@
 import Foundation
 
+#if os(Windows)
+import WinSDK
+#endif
+
 public class LocalSwiftReloader {
     public init(entryPoint: String = #filePath, onReload: @escaping () -> Void = {}) {
         self.onReload = onReload
@@ -119,10 +123,18 @@ public class LocalSwiftReloader {
         executeCommand(patchedCommand)
 
         // load the patch dylib
-        let loadResult = dlopen(outputFile.path, RTLD_NOW)
-        if loadResult == nil {
-            let error = String(cString: dlerror())
-            print("🛑 Failed to load patch dylib \(outputFile.path): \(error)")
+        // let loadResult = dlopen(outputFile.path, RTLD_NOW)
+        // if loadResult == nil {
+        //     let error = String(cString: dlerror())
+        //     print("🛑 Failed to load \(outputFile.path): \(error)")
+        //     return
+        // } else {
+        //     print("✅ Patch loaded successfully")
+        //     onReload()
+        // }
+        let error = try? loadLibrary(path: outputFile.path)
+        if error != nil {
+            print("🛑 Failed to load \(outputFile.path): \(error!)")
             return
         } else {
             print("✅ Patch loaded successfully")
@@ -142,4 +154,25 @@ private func executeCommand(_ command: SwiftBuildCommand) {
     process.arguments = command.args
     process.launch()
     process.waitUntilExit()
+}
+
+enum LoadLibraryError: Error {
+    case win32Error(Int)
+    case dlopenError(String)
+}
+
+private func loadLibrary(path: String) throws{
+    #if os(Windows) 
+        let result = path.withCString(encodedAs: UTF16.self) { LoadLibraryW($0) }
+        guard result != nil else {
+            throw LoadLibraryError.win32Error(Int(GetLastError()))
+        }
+        return
+    #else
+        let loadResult = dlopen(outputFile.path, RTLD_NOW)
+        if loadResult == nil {
+            let error = String(cString: dlerror())
+            throw LoadLibraryError.dlopenError(error)
+        }
+    #endif
 }
