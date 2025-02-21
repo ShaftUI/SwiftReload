@@ -12,8 +12,9 @@ public class SwiftPMProjectExtractor: ProjectExtractor {
   private lazy var buildManifest: BuildManifest = loadBuildManifest(projectRoot: projectRoot)
 
   public func findBuildCommand(for file: URL) -> SwiftBuildCommand? {
+    let path = file.fileSystemRepresentation
     for command in buildManifest.commands.values {
-      if command.inputs.contains(file.path) && command.tool == "shell" {
+      if command.inputs.contains(path) && command.tool == "shell" {
         return SwiftBuildCommand(from: command.args!)
       }
     }
@@ -36,4 +37,10 @@ private func findProjectRoot(of swiftSource: URL) -> URL? {
     current = current.deletingLastPathComponent()
   }
   return nil
+}
+
+extension URL {
+  var fileSystemRepresentation: String {
+    return withUnsafeFileSystemRepresentation { String(cString: $0!) }
+  }
 }

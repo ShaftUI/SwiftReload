@@ -143,10 +143,10 @@ public class LocalSwiftReloader {
 
 /// Execute a Swift build command.
 private func executeCommand(_ command: SwiftBuildCommand) {
-    let process = Process()
-    process.launchPath = "/usr/bin/env"
-    process.arguments = command.args
-    process.launch()
+    let process = try! Process.run(
+        URL(fileURLWithPath: command.args.first!),
+        arguments: command.args.dropFirst().map { $0 }
+    )
     process.waitUntilExit()
 }
 

@@ -159,14 +159,16 @@ private protocol _FileWatcher {
         class Watch {
             var hDirectory: HANDLE
             let path: String
+            let originalPath: AbsolutePath
             var overlapped: OVERLAPPED
             var terminate: HANDLE
             var buffer: UnsafeMutableBufferPointer<DWORD>  // buffer must be DWORD-aligned
             var thread: Thread?
 
-            public init(directory handle: HANDLE, _ path: String) {
+            public init(directory handle: HANDLE, _ path: String, _ originalPath: AbsolutePath) {
                 self.hDirectory = handle
                 self.path = path
+                self.originalPath = originalPath
                 self.overlapped = OVERLAPPED()
                 self.overlapped.hEvent = CreateEventW(nil, false, false, nil)
                 self.terminate = CreateEventW(nil, true, false, nil)
@@ -207,8 +209,8 @@ private protocol _FileWatcher {
             self.settle = latency
             self.delegate = delegate
 
-            self.watches = paths.map {
-                $0.pathString.withCString(encodedAs: UTF16.self) {
+            self.watches = paths.map { originalPath in
+                originalPath.pathString.withCString(encodedAs: UTF16.self) {
                     let dwDesiredAccess: DWORD = DWORD(FILE_LIST_DIRECTORY)
                     let dwShareMode: DWORD = DWORD(
                         FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
@@ -229,8 +231,11 @@ private protocol _FileWatcher {
                     assert(!(handle == INVALID_HANDLE_VALUE))
 
                     let dwSize: DWORD = GetFinalPathNameByHandleW(handle, nil, 0, 0)
-                    let path = withUnsafeTemporaryAllocation(of: WCHAR.self, capacity: Int(dwSize) + 1) {
-                        let dwSize: DWORD = GetFinalPathNameByHandleW(
+                    let path = withUnsafeTemporaryAllocation(
+                        of: WCHAR.self,
+                        capacity: Int(dwSize) + 1
+                    ) {
+                        let _ = GetFinalPathNameByHandleW(
                             handle,
                             $0.baseAddress,
                             DWORD($0.count),
@@ -239,8 +244,7 @@ private protocol _FileWatcher {
                         return String(decodingCString: $0.baseAddress!, as: UTF16.self)
                     }
 
-
-                    return Watch(directory: handle, path)
+                    return Watch(directory: handle, path, originalPath)
                 }
             }
         }
@@ -262,7 +266,7 @@ private protocol _FileWatcher {
                         var dwBytesReturned: DWORD = 0
                         if !ReadDirectoryChangesW(
                             watch.hDirectory,
-                            &watch.buffer,
+                            UnsafeMutableRawPointer(watch.buffer.baseAddress),
                             DWORD(watch.buffer.count * MemoryLayout<DWORD>.stride),
                             true,
                             dwNotifyFilter,
@@ -307,9 +311,9 @@ private protocol _FileWatcher {
 
                         var paths: [AbsolutePath] = []
                         watch.buffer.withMemoryRebound(to: FILE_NOTIFY_INFORMATION.self) {
-                            let pNotify: UnsafeMutablePointer<FILE_NOTIFY_INFORMATION>? =
-                                $0.baseAddress
-                            while var pNotify = pNotify {
+                            var pNotify: UnsafeMutablePointer<FILE_NOTIFY_INFORMATION> =
+                                $0.baseAddress!
+                            while true {
                                 // FIXME(compnerd) do we care what type of event was received?
                                 let file: String =
                                     String(
@@ -318,12 +322,19 @@ private protocol _FileWatcher {
                                             / MemoryLayout<WCHAR>.stride,
                                         freeWhenDone: false
                                     )
-                                paths.append(AbsolutePath(file))
+
+                                var url = URL(fileURLWithPath: watch.originalPath.pathString)
+                                url.appendPathComponent(file)
+                                paths.append(try! AbsolutePath(validating: url.path))
 
                                 pNotify =
                                     (UnsafeMutableRawPointer(pNotify)
                                     + Int(pNotify.pointee.NextEntryOffset))
                                     .assumingMemoryBound(to: FILE_NOTIFY_INFORMATION.self)
+
+                                if pNotify.pointee.NextEntryOffset == 0 {
+                                    break
+                                }
                             }
                         }
 
@@ -522,7 +533,11 @@ private protocol _FileWatcher {
                 throw Error.failedToWatch(directory)
             }
 
-            let wd = inotify_add_watch(fd!, directory.pathString, UInt32(WatchOptions.defaultDirectoryWatchOptions.rawValue))
+            let wd = inotify_add_watch(
+                fd!,
+                directory.pathString,
+                UInt32(WatchOptions.defaultDirectoryWatchOptions.rawValue)
+            )
             guard wd != -1 else {
                 throw Error.failedToWatch(directory)
             }
@@ -545,13 +560,16 @@ private protocol _FileWatcher {
                 throw Error.failedToWatch(file)
             }
 
-            let wd = inotify_add_watch(fd!, file.pathString, UInt32(WatchOptions.defaultFileWatchOptions.rawValue))
+            let wd = inotify_add_watch(
+                fd!,
+                file.pathString,
+                UInt32(WatchOptions.defaultFileWatchOptions.rawValue)
+            )
             guard wd != -1 else {
                 throw Error.failedToWatch(file)
             }
             self.wds[wd] = file
         }
-
 
         /// End the watch operation.
         public func stop() {
