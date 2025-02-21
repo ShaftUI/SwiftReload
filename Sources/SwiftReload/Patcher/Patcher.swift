@@ -71,7 +71,7 @@ class Pacher {
 
         /// Remove `override` modifier.
         result.modifiers = result.modifiers.filter { modifier in
-            return modifier.name.text != "override"
+            return modifier.name.text != "override" && modifier.name.text != "dynamic"
         }
 
         /// Add `_dynamicReplacement` attribute.

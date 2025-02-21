@@ -52,6 +52,12 @@ public class RecursiveFileWatcher {
         for path in changedPath {
             let url = URL(fileURLWithPath: path.pathString)
 
+            if !FileManager.default.fileExists(atPath: url.path) {
+                // The file is deleted.
+                modifyTime.removeValue(forKey: url)
+                continue
+            }
+
             if url.isDirectory {
                 enumerateFilesFiltered(at: url) { url in
                     let newModifyTime = getModifyTime(url)
@@ -62,7 +68,8 @@ public class RecursiveFileWatcher {
                 }
             } else {
                 let newModifyTime = getModifyTime(url)
-                if let oldModifyTime = modifyTime[url], oldModifyTime != newModifyTime {
+                let oldModifyTime = modifyTime[url]
+                if oldModifyTime != newModifyTime {
                     changedFiles.append(url)
                     modifyTime[url] = newModifyTime
                 }

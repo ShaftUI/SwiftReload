@@ -497,13 +497,6 @@ private protocol _FileWatcher {
         /// Start the watch operation.
         public func start() throws {
 
-            // All paths need to exist.
-            for (path, _) in paths {
-                guard localFileSystem.exists(path) else {
-                    throw Error.failedToWatch(path)
-                }
-            }
-
             // Create the file descriptor.
             let fd = inotify_init1(Int32(IN_NONBLOCK))
 
@@ -513,14 +506,8 @@ private protocol _FileWatcher {
             self.fd = fd
 
             /// Add watch for each path.
-            for (path, options) in paths {
-
-                let wd = inotify_add_watch(fd, path.description, UInt32(options.rawValue))
-                guard wd != -1 else {
-                    throw Error.failedToWatch(path)
-                }
-
-                self.wds[wd] = path
+            for (path, _) in paths {
+                try listenDirectory(path)
             }
 
             // Start the report thread.
@@ -530,6 +517,44 @@ private protocol _FileWatcher {
                 self.startRead()
             }
         }
+
+        private func listenDirectory(_ directory: AbsolutePath) throws {
+            // print("Listening to directory: \(directory)")
+
+            guard localFileSystem.isDirectory(directory) else {
+                throw Error.failedToWatch(directory)
+            }
+
+            let wd = inotify_add_watch(fd!, directory.pathString, UInt32(WatchOptions.defaultDirectoryWatchOptions.rawValue))
+            guard wd != -1 else {
+                throw Error.failedToWatch(directory)
+            }
+            self.wds[wd] = directory
+
+            for entry in try localFileSystem.getDirectoryContents(directory) {
+                let entryPath = directory.appending(component: entry)
+                if localFileSystem.isDirectory(entryPath) {
+                    try listenDirectory(entryPath)
+                } else if localFileSystem.isFile(entryPath) {
+                    try listenFile(entryPath)
+                }
+            }
+        }
+
+        private func listenFile(_ file: AbsolutePath) throws {
+            // print("Listening to file: \(file)")
+
+            guard localFileSystem.isFile(file) else {
+                throw Error.failedToWatch(file)
+            }
+
+            let wd = inotify_add_watch(fd!, file.pathString, UInt32(WatchOptions.defaultFileWatchOptions.rawValue))
+            guard wd != -1 else {
+                throw Error.failedToWatch(file)
+            }
+            self.wds[wd] = file
+        }
+
 
         /// End the watch operation.
         public func stop() {
@@ -623,6 +648,15 @@ private protocol _FileWatcher {
                         lastEventTime = Date()
                         collectedEvents.append(path)
                         reportCondition.signal()
+                    }
+
+                    // Add to watch list if it's newly created.
+                    if event.mask & UInt32(IN_CREATE) != 0 {
+                        if localFileSystem.isDirectory(path) {
+                            try? listenDirectory(path)
+                        } else if localFileSystem.isFile(path) {
+                            try? listenFile(path)
+                        }
                     }
 
                     idx += MemoryLayout<inotify_event>.size + Int(event.len)

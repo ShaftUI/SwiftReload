@@ -7,7 +7,7 @@ LocalSwiftReloader().start()
 
 let counter = FastCounter()
 
-@MainActor func hello() {
+func hello() {
     print("hello")
     counter.tick()
 }
@@ -23,14 +23,14 @@ class Counter {
 
 class FastCounter: Counter {
     override func tick() {
-        count += 11
+        count += 10
         print("count = \(count)")
     }
 }
 
 Task {
     while true {
-        try await Task.sleep(for: .milliseconds(500))
+        try await Task.sleep(for: .milliseconds(1000))
         hello()
     }
 }
