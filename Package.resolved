@@ -1,5 +1,5 @@
 {
-  "originHash" : "0389081aca39692489312fe270ab5a03e1855af4feeabb051e7c5abc25338f3e",
+  "originHash" : "72afbb20ee9a458170033da59afcf78c56bfb9defcde99431584f23c3db6c189",
   "pins" : [
     {
       "identity" : "swift-syntax",
@@ -8,15 +8,6 @@
       "state" : {
         "revision" : "0687f71944021d616d34d922343dcef086855920",
         "version" : "600.0.1"
-      }
-    },
-    {
-      "identity" : "swift-tools-support-core",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/swiftlang/swift-tools-support-core",
-      "state" : {
-        "branch" : "main",
-        "revision" : "bd9e2de5fdada4a0249de3be88f9ad95fe8511f6"
       }
     },
     {

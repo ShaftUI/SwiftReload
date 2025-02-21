@@ -1,6 +1,4 @@
 import Foundation
-import TSCBasic
-import TSCUtility
 
 /// A file watcher that watches a directory recursively with optional filtering.
 public class RecursiveFileWatcher {
@@ -48,17 +46,28 @@ public class RecursiveFileWatcher {
         }
     }
 
-    private func onFileChange(_ path: [AbsolutePath]) {
+    private func onFileChange(_ changedPath: [AbsolutePath]) {
         var changedFiles = [Foundation.URL]()
 
-        for directory in path {
-            enumerateFilesFiltered(at: URL(fileURLWithPath: directory.pathString)) { url in
+        for path in changedPath {
+            let url = URL(fileURLWithPath: path.pathString)
+
+            if url.isDirectory {
+                enumerateFilesFiltered(at: url) { url in
+                    let newModifyTime = getModifyTime(url)
+                    if let oldModifyTime = modifyTime[url], oldModifyTime != newModifyTime {
+                        changedFiles.append(url)
+                        modifyTime[url] = newModifyTime
+                    }
+                }
+            } else {
                 let newModifyTime = getModifyTime(url)
                 if let oldModifyTime = modifyTime[url], oldModifyTime != newModifyTime {
                     changedFiles.append(url)
                     modifyTime[url] = newModifyTime
                 }
             }
+
         }
 
         callback(changedFiles)

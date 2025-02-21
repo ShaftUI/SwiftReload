@@ -21,7 +21,6 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/jpsim/Yams.git", from: "5.0.0"),
-        .package(url: "https://github.com/swiftlang/swift-tools-support-core", branch: "main"),
         .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "600.0.1"),
     ],
     targets: [
@@ -29,7 +28,6 @@ let package = Package(
             name: "SwiftReload",
             dependencies: [
                 "Yams",
-                .product(name: "SwiftToolsSupport-auto", package: "swift-tools-support-core"),
                 .product(name: "SwiftParser", package: "swift-syntax"),
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
                 .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),

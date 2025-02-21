@@ -23,7 +23,7 @@ class Counter {
 
 class FastCounter: Counter {
     override func tick() {
-        count += 10
+        count += 11
         print("count = \(count)")
     }
 }
