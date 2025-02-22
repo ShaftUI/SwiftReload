@@ -32,7 +32,7 @@ struct CommandPatcher {
         patchCommand.append(["-Xfrontend", "-disable-access-control"])
         patchCommand.append(["-Xlinker", "-flat_namespace"])
         patchCommand.append(["-Xlinker", "-undefined"])
-        patchCommand.append(["-Xlinker", "suppress"])
+        patchCommand.append(["-Xlinker", "dynamic_lookup"])
         patchCommand.append(["-Xfrontend", "-enable-implicit-dynamic"])
         patchCommand.append(["-enable-private-imports"])
 
