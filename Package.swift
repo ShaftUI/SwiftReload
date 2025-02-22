@@ -42,15 +42,28 @@ let package = Package(
             ],
             swiftSettings: [
                 .unsafeFlags(["-Xfrontend", "-enable-private-imports"]),
-                .unsafeFlags(["-Xfrontend", "-enable-implicit-dynamic"])
+                .unsafeFlags(["-Xfrontend", "-enable-implicit-dynamic"]),
             ],
             linkerSettings: [
-                .unsafeFlags(["-Xlinker", "--export-dynamic"], .when(platforms: [.linux, .android])),
+                .unsafeFlags(
+                    ["-Xlinker", "--export-dynamic"],
+                    .when(platforms: [.linux, .android])
+                )
             ]
         ),
         .testTarget(
             name: "SwiftReloadTests",
-            dependencies: ["SwiftReload"]
+            dependencies: ["SwiftReload"],
+            swiftSettings: [
+                .unsafeFlags(["-Xfrontend", "-enable-private-imports"]),
+                .unsafeFlags(["-Xfrontend", "-enable-implicit-dynamic"]),
+            ],
+            linkerSettings: [
+                .unsafeFlags(
+                    ["-Xlinker", "--export-dynamic"],
+                    .when(platforms: [.linux, .android])
+                )
+            ]
         ),
     ]
 )

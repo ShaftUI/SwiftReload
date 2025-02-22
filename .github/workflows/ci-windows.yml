@@ -1,0 +1,31 @@
+# This workflow will build a Swift project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-swift
+
+name: Swift
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  windows:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: SwiftyLab/setup-swift@latest
+        with:
+          swift-version: https://download.swift.org/swift-6.1-branch/windows10/swift-6.1-DEVELOPMENT-SNAPSHOT-2025-02-20-a/swift-6.1-DEVELOPMENT-SNAPSHOT-2025-02-20-a-windows10.exe
+          development: true
+
+      - name: Get swift version
+        run: swift --version
+
+      - name: Build
+        run: swift build
+
+      # - name: Run tests
+      #   run: swift test
