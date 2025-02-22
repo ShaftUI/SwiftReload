@@ -40,11 +40,20 @@ dependencies: [
         "SwiftReload"
     ],
     swiftSettings: [
-        .unsafeFlags(["-Xfrontend", "-enable-private-imports"]),
-        .unsafeFlags(["-Xfrontend", "-enable-implicit-dynamic"]),
+        .unsafeFlags(
+            ["-Xfrontend", "-enable-private-imports"],
+            .when(configuration: .debug)
+        ),
+        .unsafeFlags(
+            ["-Xfrontend", "-enable-implicit-dynamic"],
+            .when(configuration: .debug)
+        ),
     ],
     linkerSettings: [
-        .unsafeFlags(["-Xlinker", "--export-dynamic"], .when(platforms: [.linux, .android])),
+        .unsafeFlags(
+            ["-Xlinker", "--export-dynamic"],
+            .when(platforms: [.linux, .android], configuration: .debug)
+        ),
     ]
 )
 ```
